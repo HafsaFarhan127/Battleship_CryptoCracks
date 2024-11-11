@@ -84,3 +84,29 @@ def affineCipherDecrypt(cipherText,k,a):
 affineCipherDecrypt("ibwwv",5,2)
 
 
+#hafsa caesar encryption
+def rotate(char,shift):
+    if(shift>len(char)):
+        shift=shift%len(char)
+        #this line is for shift bigger than length of char,it takes the remainder and then does the same function
+    return(char[shift:]+char[0:shift])
+
+def caesar(plaintext, characters, shift):
+    shifted_chars=rotate(characters,shift)
+    mytable=str.maketrans(characters,shifted_chars)
+    #maketrans(x,y) where x is the og and the y are the values that it is replaced by
+    return(plaintext.translate(mytable))
+
+plaintext=input("Enter your plaintext:")
+characters=("abcdefghijklmnopqrstuvwxyz")
+shift=int(input("Enter the shift:"))
+caesar(plaintext,characters,shift)
+
+#decryption
+#for encryption and decryption
+plaintext=input("Enter your plaintext:")
+ciphertxt=caesar(plaintext,ALPHABET,3)
+print("cipher is: ",ciphertxt)
+
+#decrypt ,in both these cases 3 is the key value which i can geenralize later for decryption as -k where k is +ve key value
+print("plaintext was: ",caesar(ciphertxt,ALPHABET,-3))
