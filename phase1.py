@@ -84,7 +84,10 @@ def affineCipherDecrypt(cipherText,k,a):
 affineCipherDecrypt("ibwwv",5,2)
 
 
-#####hafsa -caesar encryption
+#####hafsa -caesar & hill cipher
+#for testing,i used input prompts so you can check extensively.
+
+# CAESAR CIPHER Encryption
 def rotate(char,shift):
     if(shift>len(char)):
         shift=shift%len(char)
@@ -102,8 +105,7 @@ shift=int(input("Enter the shift/key:"))
 ciphertxt=caesarEncrypt(plaintext,ALPHABET,shift)
 print("cipher is: ",ciphertxt)
 
-#caesar decryption
-#decrypt ,in both these cases 3 is the key value which i can geenralize later for decryption as -k where k is +ve key value
+# CAESAR CIPHER Decryption
 
 def caesarDecrypt(ciphertext, characters, shift):
     shifted_chars = rotate(characters, -shift)
@@ -114,6 +116,116 @@ ciphertext=input("Enter your ciphertext:")
 shift=int(input("Enter the shift/key:"))
 plaintext=caesarDecrypt(ciphertext,ALPHABET,shift)
 print("plaintext is: ",plaintext)
+
+#HILL CIPHER Encryption
+def det(a):
+    ElemA=1
+    ElemB=1
+    if len(a) != 2 or len(a[0]) != 2 or len(a[1]) != 2:
+        return False
+    for row in range(len(a)): 
+        for col in range(len(a[row])): 
+            if row==col:
+                ElemA*=a[row][col] 
+            else:
+                ElemB*=a[row][col] 
+
+                
+    det=ElemA-ElemB
+    return det
+
+def Hill_extendedGCD(a, b):
+    if b == 0:
+        return a, 1, 0
+    
+    gcd, s1, t1 = extendedGCD(b, a % b)
+
+    s = t1
+    t = s1 - (a // b) * t1
+
+    return gcd, s, t
+
+def hillCipherEncrypt(pt, k, alphabet):
+    determinant = det(k)
+    if determinant == False:
+        return "The input must be a 2x2 matrix"
+
+    gcd, _, _ = Hill_extendedGCD(determinant, len(alphabet))
+    #here its _ as the other variables returned from this function will not be used 
+    if gcd != 1:
+        return "The key matrix does not admit an inverse."
+
+    if len(pt) % 2 != 0:
+        pt += alphabet[0]
+
+    pt_numbers = [alphabet.index(char) for char in pt]
+
+    encrypted_numbers = []
+    for i in range(0, len(pt_numbers), 2):
+        x1 = pt_numbers[i]
+        x2 = pt_numbers[i + 1]
+        
+        y1 = (k[0][0] * x1 + k[0][1] * x2) % len(alphabet)
+        y2 = (k[1][0] * x1 + k[1][1] * x2) % len(alphabet)
+        encrypted_numbers.extend([y1, y2])
+
+    encrypted_text = ''.join([alphabet[num] for num in encrypted_numbers])
+    return encrypted_text
+
+k = [[1, 2], [4, 3]]
+plaintext =input("Enter your plaintext:")
+ciphertext = hillCipherEncrypt(plaintext, k, ALPHABET)
+print(ciphertext)
+
+##HILL CIPHER Decryption
+
+def Hill_inverseMatrixMod(a, m):
+    if len(a) != 2 or len(a[0]) != 2 or len(a[1]) != 2:
+        return "The key must be a 2x2 matrix"
+    
+    determinant = det(a)
+    gcd, det_inverse, _ = Hill_extendedGCD(determinant, m)
+    if gcd != 1:
+        return "The matrix does not admit an inverse."
+    det_inverse = det_inverse % m
+    
+    adjoint = [[a[1][1], -a[0][1]], [-a[1][0], a[0][0]]]
+    
+    inverse = [[(det_inverse * adjoint[i][j]) % m for j in range(2)] for i in range(2)]
+    
+    return inverse
+    
+def hillCipherDecrypt(ct, k, alphabet):
+    determinant = det(k)
+    if determinant == False:
+        return "The input must be a 2x2 matrix"
+
+    m = len(alphabet)
+    inverse_k = Hill_inverseMatrixMod(k, m)
+    if inverse_k == "The matrix does not admit an inverse.":
+        return inverse_k
+
+    ct_numbers = [alphabet.index(char) for char in ct]
+
+    decrypted_numbers = []
+    for i in range(0, len(ct_numbers), 2):
+        y1 = ct_numbers[i]
+        y2 = ct_numbers[i + 1]
+        
+        x1 = (inverse_k[0][0] * y1 + inverse_k[0][1] * y2) % m
+        x2 = (inverse_k[1][0] * y1 + inverse_k[1][1] * y2) % m
+        decrypted_numbers.extend([x1, x2])
+
+    decrypted_text = ''.join([alphabet[num] for num in decrypted_numbers])
+    
+    if decrypted_text[-1] == alphabet[0]:
+        decrypted_text = decrypted_text[:-1]
+    return decrypted_text
+
+k = [[1, 2], [4, 3]]
+ciphertext =input("Enter your ciphertext:")
+plaintext = hillCipherDecrypt(ciphertext, k, ALPHABET)
+print(plaintext)
 
 #####Fazil - Playfair & Columnar
 
