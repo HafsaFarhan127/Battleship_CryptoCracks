@@ -91,22 +91,27 @@ def rotate(char,shift):
         #this line is for shift bigger than length of char,it takes the remainder and then does the same function
     return(char[shift:]+char[0:shift])
 
-def caesar(plaintext, characters, shift):
+def caesarEncrypt(plaintext, characters, shift):
     shifted_chars=rotate(characters,shift)
-    mytable=str.maketrans(characters,shifted_chars)
+    mytable=str.maketrans(characters, shifted_chars)
     #maketrans(x,y) where x is the og and the y are the values that it is replaced by
     return(plaintext.translate(mytable))
 
 plaintext=input("Enter your plaintext:")
-characters=("abcdefghijklmnopqrstuvwxyz")
-shift=int(input("Enter the shift:"))
-caesar(plaintext,characters,shift)
-
-#decryption
-#for encryption and decryption
-plaintext=input("Enter your plaintext:")
-ciphertxt=caesar(plaintext,ALPHABET,3)
+shift=int(input("Enter the shift/key:"))
+ciphertxt=caesarEncrypt(plaintext,ALPHABET,shift)
 print("cipher is: ",ciphertxt)
 
+#caesar decryption
 #decrypt ,in both these cases 3 is the key value which i can geenralize later for decryption as -k where k is +ve key value
-print("plaintext was: ",caesar(ciphertxt,ALPHABET,-3))
+
+def caesarDecrypt(ciphertext, characters, shift):
+    shifted_chars = rotate(characters, -shift)
+    mytable = str.maketrans(characters, shifted_chars)
+    return ciphertext.translate(mytable)
+
+ciphertext=input("Enter your ciphertext:")
+shift=int(input("Enter the shift/key:"))
+plaintext=caesarDecrypt(ciphertext,ALPHABET,shift)
+print("plaintext is: ",plaintext)
+
