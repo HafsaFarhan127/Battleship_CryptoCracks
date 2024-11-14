@@ -54,8 +54,10 @@ def grid2ByteArray(grid):
     return bytearrayTransmission
 
 gridSize = 10
-global grid
-grid = createGrid(gridSize)
+global grid1,grid2
+grid1 = createGrid(gridSize)
+grid2 = createGrid(gridSize)
+
 ships = [
     (5, 1),  # Ship of size 5
     (4, 2),  # Ship of size 4
@@ -65,9 +67,15 @@ ships = [
 ]
 
 for shipSize, shipSymbol in ships:
-    placeShip(grid, shipSize, shipSymbol)
+    placeShip(grid1, shipSize, shipSymbol)
 
-print(grid)
+for shipSize, shipSymbol in ships:
+    placeShip(grid2, shipSize, shipSymbol)
+
+#two grids as one will be sent to each player and we need to store a local copy in the server for each
+print(f'this is {grid1}')
+print(f'this is {grid2}')
+
 
 from socket import *
 serverPort = 12001
@@ -82,8 +90,10 @@ print('The server is ready to receive')
 while True:
     # The server waits on accept() for incoming requests
     # A new socket created on return for every client
+
+    #can we distinguish between each client?liek have different coonections for each client?
     connectionSocket, addr = serverSocket.accept()
-    connectionSocket.send(grid2ByteArray(grid))
+    connectionSocket.send(grid2ByteArray(grid1))
 
     #Getting message from the client
     # Read bytes from socket (but not the address as in UDP)
