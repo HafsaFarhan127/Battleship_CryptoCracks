@@ -2,6 +2,7 @@ import random
 from socket import *
 from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
+import struct
 
 # Helper functions for encryption
 def pad_data(data, block_size):
@@ -34,20 +35,75 @@ serverSocket.listen(2)
 print('The server is ready to receive')
 
 # Encryption configuration
-encryption_mode = True  # Toggle encryption ON/OFF
+encryption = input("Do you want the communication in Encryption Mode?")
+while encryption.lower() !="yes" and encryption.lower() != "no":
+    print("Enter yes/no")
+    encryption = input("Do you want the communication in Encryption Mode?")
+
+if encryption=="yes":
+    encryption_mode = True
+else:
+    encryption_mode = False
+encryption_flag = bytearray([1 if encryption_mode else 0])
+
 aes_key = get_random_bytes(16) if encryption_mode else None
 
 def send_encrypted(socket, data):
     if encryption_mode:
-        socket.sendall(aes_encrypt(data, aes_key))
+        encrypted_data = aes_encrypt(data, aes_key)
+        # Send the length of the encrypted data followed by the data itself
+        socket.sendall(struct.pack("!I", len(encrypted_data)) + encrypted_data)
     else:
         socket.sendall(data)
 
-def receive_encrypted(socket, buffer_size=1024):
-    data = socket.recv(buffer_size)
+def receive_encrypted(socket):
+    # Read the length of the incoming data
+    data_length = struct.unpack("!I", socket.recv(4))[0]
+    data = socket.recv(data_length)
     if encryption_mode:
         return aes_decrypt(data, aes_key)
     return data
+
+def createGrid(size):
+    return [[0 for _ in range(size)] for _ in range(size)]
+
+def canPlaceShip(grid, row, col, direction, shipSize):
+    if direction == 'H':
+        if col + shipSize > len(grid):
+            return False
+        for i in range(shipSize):
+            if grid[row][col + i] != 0:
+                return False
+    elif direction == 'V':
+        if row + shipSize > len(grid):
+            return False
+        for i in range(shipSize):
+            if grid[row + i][col] != 0:
+                return False
+    return True
+
+def placeShip(grid, shipSize, shipSymbol):
+    while True:
+        direction = random.choice(['H', 'V'])
+        row = random.randint(0, len(grid) - 1)
+        col = random.randint(0, len(grid) - 1)
+        if canPlaceShip(grid, row, col, direction, shipSize):
+            if direction == 'H':
+                for i in range(shipSize):
+                    grid[row][col + i] = shipSymbol
+            elif direction == 'V':
+                for i in range(shipSize):
+                    grid[row + i][col] = shipSymbol
+            break
+
+def gridToByteArray(grid):
+    return bytearray([cell for row in grid for cell in row])
+
+def byteArrayToList(byteArray):
+    return [int(byte) for byte in byteArray]
+
+def listToByteArray(data):
+    return bytearray(data)
 
 # Create grids
 gridSize = 10
@@ -61,12 +117,22 @@ for shipSize, shipSymbol in ships:
 # Accept connections
 print("Waiting for Player 1...")
 player1_socket, _ = serverSocket.accept()
-send_encrypted(player1_socket, bytearray([1 if encryption_mode else 0]))
+player1_socket.sendall(encryption_flag)
+if encryption_mode:    
+    print("Sending AES key to Player 1...")
+    player1_socket.sendall(aes_key)  # Send the AES key to Player 1
+
+print("Grid before encryption (Player 1):", grid1)
 send_encrypted(player1_socket, gridToByteArray(grid1))
 
 print("Waiting for Player 2...")
 player2_socket, _ = serverSocket.accept()
-send_encrypted(player2_socket, bytearray([1 if encryption_mode else 0]))
+player2_socket.sendall(encryption_flag)
+if encryption_mode:    
+    print("Sending AES key to Player 2...")
+    player2_socket.sendall(aes_key)  # Send the AES key to Player 2
+
+print("Grid before encryption (Player 2):", grid2)
 send_encrypted(player2_socket, gridToByteArray(grid2))
 
 # Initialize game variables
@@ -95,17 +161,19 @@ while not game_over:
 
         # Check if game is over
         if sink == 1:
-            send_encrypted(player1_socket, bytearray([2]))
-            send_encrypted(player2_socket, bytearray([2]))
+            send_encrypted(attacker, bytearray([2]))
+            send_encrypted(defender, bytearray([2]))
             game_over = True
             break
 
         # Forward attack coordinates to defender
+        move = [x, y]  # Ensure move is always a list of two integers
+        print(f"Sending move to defender: {move}")
         send_encrypted(defender, bytearray(move))
 
         # Defender processes the attack and responds
         response = byteArrayToList(receive_encrypted(defender))
-        send_encrypted(attacker, bytearray(response))
+        # send_encrypted(attacker, bytearray(response))
 
         # Switch roles
         attacker, defender = defender, attacker

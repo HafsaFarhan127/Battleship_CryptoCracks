@@ -47,5 +47,6 @@ def aes_decrypt(ciphertext, key, mode="ECB"):
 
 
 key = get_random_bytes(16)  # AES requires a 16-byte key for 128-bit encryption
-ciphertext = aes_encrypt(bytes([0,1]), key, mode="CBC")
+print(bytes([0,1]))
+ciphertext = aes_encrypt(bytes([0,1]), None, mode="CBC")
 print("Ciphertext:", ciphertext)
