@@ -104,6 +104,8 @@ while not game_over:
         # Check if game is over
         if sink == 1:
             print(f"Player {'1' if attacker == player1_socket else '2'} wins!")
+            attacker.sendall(listToByteArray([2]))  # 2 indicates game over to attacker
+            defender.sendall(listToByteArray([2]))
             game_over = True
             break
 
@@ -114,8 +116,6 @@ while not game_over:
         response = byteArrayToList(defender.recv(1024))
         print(f"Player {'1' if defender == player1_socket else '2'} responds with: {response}")
 
-        # Send defender's response to attacker
-        attacker.sendall(listToByteArray(response))
 
         # Switch roles
         attacker, defender = defender, attacker
