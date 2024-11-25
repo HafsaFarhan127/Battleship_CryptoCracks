@@ -48,7 +48,6 @@ def displayGuessMadeMatrix(SERVER_take_shotMsg,grid,oldGuess_X,oldGuess_Y):
           print(cell, end="  ")  # Print each cell with spaces
       print()  # Move to the next line
   return grid
-  
 
 def byteArray2Grid(arrayByte):
     transmissionMatrix = []
@@ -73,10 +72,10 @@ clientSocket.connect((serverName, serverPort))
 try:
     while True:
         # Receive the initial response or grid data
-        response = clientSocket.recv(1024)
-        grid = byteArray2Grid(response)
-        print("Received grid:", grid)
-        print(displayGuessMadeMatrix('hit',grid,0,0))
+        #response = clientSocket.recv(1024)
+        #grid = byteArray2Grid(response)
+        #print("Received grid:", grid)
+        #print(displayGuessMadeMatrix('hit',grid,0,0))
 
 
 

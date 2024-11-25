@@ -48,10 +48,18 @@ def grid2ByteArray(grid):
     transmissionMatrix=[]
     for row in grid:
         for column in row:
-            print(column)
             transmissionMatrix.append(column)
     bytearrayTransmission = bytearray(transmissionMatrix)
     return bytearrayTransmission
+
+def byteArray2oneD(byteArray):
+    transmissionMatrix = []
+    for i in range(len(byteArray)):
+        transmissionMatrix.append(byteArray[i])
+    return byteArray
+
+def oneD2byteArray(list1):
+    return bytearray(list1)
 
 gridSize = 10
 global grid1,grid2
@@ -59,11 +67,11 @@ grid1 = createGrid(gridSize)
 grid2 = createGrid(gridSize)
 
 ships = [
-    (5, 1),  # Ship of size 5
-    (4, 2),  # Ship of size 4
+    (5, 5),  # Ship of size 5
+    (4, 4),  # Ship of size 4
     (3, 3),  # Ship of size 3
-    (3, 4),  # Ship of size 3
-    (2, 5)   # Ship of size 2
+    (2, 2),  # Ship of size 2
+    (1, 1)   # Ship of size 1
 ]
 
 for shipSize, shipSymbol in ships:
@@ -84,22 +92,65 @@ serverSocket = socket(AF_INET, SOCK_STREAM)
 # Bind it
 serverSocket.bind(('127.0.0.1', serverPort))
 # Server begins listening for incoming TCP requests
-serverSocket.listen(10) # Up to 10 clients in the queue
+serverSocket.listen(2) # Up to 2 clients in the queue
 print('The server is ready to receive')
-# Wait for connection requests (loop forever)
-while True:
-    # The server waits on accept() for incoming requests
-    # A new socket created on return for every client
 
-    #can we distinguish between each client?liek have different coonections for each client?
-    connectionSocket, addr = serverSocket.accept()
-    connectionSocket.send(grid2ByteArray(grid1))
+#Accept connections for Player 1 and Player 2
+print("Waiting for Player 1...")
+client1_socket, client1_address = serverSocket.accept()
+print(f"Player 1 connected: {client1_address}")
+client1_socket.sendall(grid2ByteArray(grid1))
 
-    #Getting message from the client
-    # Read bytes from socket (but not the address as in UDP)
-    message = connectionSocket.recv(1024)
-    print(message)
+print("Waiting for Player 2...")
+client2_socket, client2_address = serverSocket.accept()
+print(f"Player 2 connected: {client2_address}")
+client2_socket.sendall(grid2ByteArray(grid2))
 
+player1 = client1_socket  # Start with Player 1
+player2 = client2_socket
+
+# Notify players who starts
+player1.sendall(oneD2byteArray([1]))
+player2.sendall(oneD2byteArray([0]))
+
+sunk=False
+
+# Game Loop
+while sunk==False:
+    # try:
+        # Notify the current player it's their turn
+        player1.sendall(oneD2byteArray([1]))
+        player2.sendall(oneD2byteArray([0]))
+        #receive the attack coordinate from player1
+        movePlayer1 = player1.recv(1024)
+
+        if not movePlayer1:
+            print("A player disconnected.")
+            break
+        
+        #sending the attack to player2
+        player2.sendall(movePlayer1)
+        hitCheckByte = player2.recv(1024)
+        hitCheck = byteArray2oneD(hitCheckByte)
+        print(hitCheck)
+        if hitCheck[1]==1:
+            sunk=True
+
+        #sending the attack response to player1
+        player1.sendall(hitCheckByte)
+
+        #Switch turns
+        print(player1)
+        print(player2)
+        player1, player2 = player2, player1
+        print(player1)
+        print(player2)
+        
+    # except Exception as e:
+    #     print("Error"+str(e))
+    #     break
     
-    # Close connection to this client (but not welcoming socket)
-    connectionSocket.close()
+client1_socket.close()
+client2_socket.close()
+serverSocket.close()
+print("Server shut down.")
