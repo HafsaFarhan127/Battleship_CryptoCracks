@@ -58,6 +58,9 @@ while True:
     try:
         # Wait for turn signal
         server_message = byteArrayToList(client_socket.recv(1024))
+        if 2 in server_message:  # Game over
+            print("Game over! You lose.")
+            break
         if 1 in server_message:  # Player's turn
             while True:
                 try:
