@@ -1,5 +1,6 @@
 import socket
 
+
 def byteArrayToGrid(byteArray, size):
     grid = []
     for i in range(0, len(byteArray), size):
@@ -17,7 +18,7 @@ def displayGrid(grid):
         print(" ".join(map(str, row)))
 
 def displayGuessMadeMatrix(SERVER_take_shotMsg,grid,oldGuess_X,oldGuess_Y):
-   #will take old user guess and put value at guess acc to msg received from server
+  #will take old user guess and put value at guess acc to msg received from server
   if SERVER_take_shotMsg=='hit':
       grid[oldGuess_X][oldGuess_Y]='x'
   if SERVER_take_shotMsg=='miss':
