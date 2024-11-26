@@ -24,6 +24,9 @@ def aes_decrypt(ciphertext, key):
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
     return unpad_data(cipher.decrypt(ciphertext))
 
+def encryptWithPublicKey(msg, e, n):
+    return pow(msg, e, n)
+
 # Ship configuration
 ships = [(5, 5), (4, 4), (3, 3), (3, 3), (2, 2)]
 
@@ -47,6 +50,7 @@ else:
 encryption_flag = bytearray([1 if encryption_mode else 0])
 
 aes_key = get_random_bytes(16) if encryption_mode else None
+aes_key_int = int.from_bytes(aes_key, "big") if encryption_mode else None
 
 def send_encrypted(socket, data):
     if encryption_mode:
@@ -118,21 +122,32 @@ for shipSize, shipSymbol in ships:
 print("Waiting for Player 1...")
 player1_socket, _ = serverSocket.accept()
 player1_socket.sendall(encryption_flag)
-if encryption_mode:    
+if encryption_mode:
+    player1_public_key = player1_socket.recv(1024).decode().split()
+    player1_n = int(player1_public_key[0])
+    player1_e = int(player1_public_key[1])
+    print("Received Player 1's Public Key:", (player1_n, player1_e))
     print("Sending AES key to Player 1...")
-    player1_socket.sendall(aes_key)  # Send the AES key to Player 1
+    encrypted_key_1 = encryptWithPublicKey(aes_key_int, player1_e, player1_n)
+    player1_socket.sendall(str(encrypted_key_1).encode())
 
-print("Grid before encryption (Player 1):", grid1)
 send_encrypted(player1_socket, gridToByteArray(grid1))
 
 print("Waiting for Player 2...")
 player2_socket, _ = serverSocket.accept()
 player2_socket.sendall(encryption_flag)
 if encryption_mode:    
-    print("Sending AES key to Player 2...")
-    player2_socket.sendall(aes_key)  # Send the AES key to Player 2
+    # Receive Player 2's public key
+    player2_public_key = player2_socket.recv(1024).decode().split()
+    player2_n = int(player2_public_key[0])
+    player2_e = int(player2_public_key[1])
+    print("Received Player 2's Public Key:", (player2_n, player2_e))
 
-print("Grid before encryption (Player 2):", grid2)
+    # Encrypt and send AES key to Player 2
+    encrypted_key_2 = encryptWithPublicKey(aes_key_int, player2_e, player2_n)
+    player2_socket.sendall(str(encrypted_key_2).encode())
+    print("Sent encrypted AES key to Player 2")
+
 send_encrypted(player2_socket, gridToByteArray(grid2))
 
 # Initialize game variables

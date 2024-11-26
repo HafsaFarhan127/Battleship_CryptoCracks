@@ -3,7 +3,7 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
 import struct
 
-# Helper functions for encryption
+# Helper functions for AES encryption
 def pad_data(data, block_size):
     pad_len = block_size - len(data) % block_size
     return data + bytes([pad_len] * pad_len)
@@ -33,8 +33,19 @@ def listToByteArray(data):
     return bytearray(data)
 
 def displayGrid(grid):
-    for row in grid:
-        print(" ".join(map(str, row)))
+    # Print column numbers at the top
+    print("   ", end="")  # Add spaces for alignment
+    for i in range(10):
+        print(i, end="  ")  # Print column headers
+    print()  # Move to the next line
+    # Print a line below the headers
+    print("  " + "-" * 30)
+    # Print each row with its row number
+    for j in range(10):
+        print(j, "|", end=" ")  # Print row number with a separator
+        for cell in grid[j]:
+            print(cell, end="  ")  # Print each cell with spaces
+        print()  # Move to the next line    
 
 def displayGuessMadeMatrix(SERVER_take_shotMsg, grid, oldGuess_X, oldGuess_Y):
     if SERVER_take_shotMsg == 'hit':
@@ -56,6 +67,54 @@ def displayGuessMadeMatrix(SERVER_take_shotMsg, grid, oldGuess_X, oldGuess_Y):
             print(cell, end="  ")  # Print each cell with spaces
         print()  # Move to the next line
 
+import random
+import math
+# RSA Key Generation and Operations
+def extendedGCD(a, b):
+    coef_2, coef_1 = (1, 0), (0, 1)
+    while b != 0:
+        quotient = a // b
+        a, b = b, a % b
+        coef_2, coef_1 = coef_1, (coef_2[0] - quotient * coef_1[0], coef_2[1] - quotient * coef_1[1])
+    return a, coef_2[0], coef_2[1]
+
+def inverseMod(a, m):
+    gcd, inv, _ = extendedGCD(a, m)
+    if gcd != 1:
+        raise Exception(f"Error, {a} does not admit an inverse mod {m}")
+    return inv % m
+
+def generateKeyPair(p, q):
+    n = p * q
+    phi_n = (p - 1) * (q - 1)
+    for _ in range(1000):
+        e = random.randint(3, 65537)
+        if math.gcd(e, phi_n) == 1:
+            break
+    else:
+        raise Exception("Failed to generate a suitable e.")
+    d = inverseMod(e, phi_n)
+    return (n, e), (n, d)
+
+def encryptWithPublicKey(msg, e, n):
+    return pow(msg, e, n)
+
+def decryptWithPrivateKey(ciphertext, d, n):
+    return pow(ciphertext, d, n)
+
+# Fixed p and q for simplicity
+p = 5468586886433619073894411726580764173498770708709664207666335008910954157394117737047010310832685387467404417421582009414228902134582657991102753570623459
+q = 6442675118318342480288941508523630505099561268793349471454944513843099853236531787541189244253590278169247240616311079998017162034233121434399387485428527
+
+# Generate RSA key pair
+public_key, private_key = generateKeyPair(p, q)
+print("Generated Public Key:", public_key)
+
+# Save private key locally
+with open("private_key1.txt", "w") as f:
+    f.write(str({private_key}))
+
+
 # Server connection
 host = '127.0.0.1'
 port = 12001
@@ -65,10 +124,13 @@ client_socket.connect((host, port))
 encryption_flag = client_socket.recv(1)
 encryption_mode = encryption_flag[0] == 1  
 
-
-# Receive the AES key from the server
-aes_key = client_socket.recv(16) if encryption_mode else None
-
+if encryption_mode:
+    # Send public key to the server
+    client_socket.sendall(f"{public_key[0]} {public_key[1]}".encode())  # Send n and e as space-separated values
+    # Receive the AES key from the server
+    encrypted_aes_key = int(client_socket.recv(1024).decode())
+    aes_key = decryptWithPrivateKey(encrypted_aes_key, private_key[1], private_key[0])
+    aes_key = aes_key.to_bytes(16, "big")  # Convert to bytes
 def send_encrypted(data):
     if encryption_mode:
         encrypted_data = aes_encrypt(data, aes_key)
@@ -112,17 +174,17 @@ while True:
             if result[1] == 1:
                 print("You sunk the ship! You win!")
                 break
-            print(result)
+            
             if result[0] == 1:
-                print()
                 print("HIT!")
-                print()                
+                print("Opponent's Grid")                
                 displayGuessMadeMatrix("hit", guessGrid, x, y)
             else:
-                print()
                 print("MISS!")
-                print()                
+                print("Opponent's Grid")                
                 displayGuessMadeMatrix("miss", guessGrid, x, y)
+                print("Your Grid:")
+                displayGrid(myGrid)
         elif 0 in server_message:
             print("Waiting for opponent's move...")
             move = byteArrayToList(receive_encrypted())
