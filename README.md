@@ -50,7 +50,7 @@ If Python is installed, install the required cryptography library:
 
 **Setup:**
 
-1.  Run the `GameServer` and `Player` scripts.
+1.  Run the `GameServer`(server_encrypted.py) and `Player`(client1secure.py and client2secure.py) scripts.
 2.  The server initializes the game.
 
 **Game Start:**
