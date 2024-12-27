@@ -18,10 +18,9 @@ The Battleship project follows the classic game rules: a 10x10 grid is generated
 *   Secure data transmission
 *   Ensure fair play
 
-This project was developed in five phases:
-
 ## Phases of Implementation <a name="phases-of-implementation"></a>
 
+This project was developed in five phases:
 *   **Phase 1: Historical Symmetric Key Encryption:** Explored classical symmetric encryption algorithms for encrypting numeric data. Implemented and tested various ciphers, including Caesar, Monoalphabetic, Homophonic, Playfair, Vigenère, Autokey, Rail Fence, Columnar Transposition, Affine, and Hill ciphers. Developed corresponding decryption functions for each cipher.
 *   **Phase 2: Modern Symmetric Ciphers:** Focused on security and efficiency by implementing modern symmetric ciphers like AES, DES, 3DES, and Blowfish. Utilized the CBC mode for AES. Used the PyCryptodome library.
 *   **Phase 3: Game Logic:** Developed the Battleship game logic to manage grid creation, ship placement, and turn-based gameplay. Encoded ships of varying sizes with numeric values and placed them on a 10x10 grid. Implemented a random generation function for valid ship placement. Encoded logic for handling hits, misses, and sunk ships.
