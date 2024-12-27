@@ -66,10 +66,7 @@ Players take turns attacking by sending coordinates to the server. The server pr
 Once all ships of a player are sunk, the server notifies both players, and the game ends.
 
 Here is the usage demo recording:
-<video controls width="600">
-  <source src="https://github.com/HafsaFarhan127/Battleship_CryptoCracks/blob/main/Demo/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![Usage Demo](./Demo/demo_fast.gif)
 
 ## Authors <a name="authors"></a>
 
