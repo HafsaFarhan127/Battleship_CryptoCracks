@@ -1,18 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[7]:
-
-
-get_ipython().system('pip install pycryptodome')
-
-
-
-# In[13]:
-
-
-from Crypto.Cipher import DES, DES3, AES, Blowfish
-from Crypto.Random import get_random_bytes
+from Cryptodome.Cipher import DES, DES3, AES, Blowfish
+from Cryptodome.Random import get_random_bytes
 import struct
 
 def pad_data(data, block_size):
@@ -190,10 +177,6 @@ decrypted_blowfish = blowfish_decrypt(ciphertext_blowfish, key_blowfish, mode="C
 print("Blowfish Encrypted:", ciphertext_blowfish)
 print("Original:", data, "| Decrypted Blowfish:", bytes_to_list(decrypted_blowfish))
 
-
-# In[14]:
-
-
 def rc4_key_schedule(key):
     """Initialize the key-scheduling algorithm (KSA) for RC4."""
     S = list(range(256))
@@ -251,10 +234,6 @@ print("Ciphertext:", ciphertext)
 # Decrypt
 decrypted_data = rc4_decrypt(ciphertext, key)
 print("Original:", data_list, "| Decrypted:", decrypted_data)
-
-
-# In[44]:
-
 
 import random
 
@@ -324,16 +303,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# In[43]:
-
-
-grid[2][4]
-
-
-# In[ ]:
-
-
-
-

@@ -18,8 +18,6 @@ def inverseMod(a,m):
         raise Exception("Error, "+str(a)+" does not admit an inverse mod "+str(m))
     return inv%m
 
-    
-
 def sqm(a, e, m):
     res = 1
     base = a
@@ -57,4 +55,3 @@ extendedGCD(phiN,e)
 d = inverseMod(e,phiN)
 
 print("Public key:",(e,n))
-
