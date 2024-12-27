@@ -65,7 +65,8 @@ Players take turns attacking by sending coordinates to the server. The server pr
 
 Once all ships of a player are sunk, the server notifies both players, and the game ends.
 
-Here is the usage demo recording: [Insert link to demo recording here]
+Here is the usage demo recording:
+![Here is the usage demo recording: ](./Demo/demo.mp4)
 
 ## Authors <a name="authors"></a>
 
